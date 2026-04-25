@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DIP Dashboard Pro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar glassmorphism">
+      <div class="sidebar-header">
+        <h1 class="logo-text">DIP<span class="highlight">Vision</span></h1>
+        <p class="subtitle">Digital Image Processing</p>
+      </div>
+
+      <div class="config-section">
+        <label class="section-title">1. Image Input</label>
+        <div class="file-upload-wrapper">
+          <input type="file" id="imageInput" accept=".jpg, .jpeg, .png">
+          <label for="imageInput" class="custom-file-upload">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            <span id="file-name">Choose an Image</span>
+          </label>
+        </div>
+      </div>
+
+      <form id="dipForm">
+        <!-- Noise -->
+        <div class="accordion-item">
+          <div class="accordion-header">
+            <span class="title">2. Simulate Noise</span>
+            <span class="icon">+</span>
+          </div>
+          <div class="accordion-content">
+            <div class="control-group">
+              <label>Type</label>
+              <select name="noise_type" id="noiseType">
+                <option value="None">None</option>
+                <option value="Gaussian">Gaussian</option>
+                <option value="Salt & Pepper">Salt & Pepper</option>
+                <option value="Speckle">Speckle</option>
+              </select>
+            </div>
+            
+            <div id="noiseParamsGaussian" class="params-block hidden">
+              <div class="slider-wrapper">
+                <label>Mean (μ) <span id="val_gm">0.0</span></label>
+                <input type="range" name="gaussian_mean" min="-50" max="50" step="1" value="0.0">
+              </div>
+              <div class="slider-wrapper">
+                <label>Std Dev (σ) <span id="val_gs">25.0</span></label>
+                <input type="range" name="gaussian_std" min="1" max="50" step="1" value="25.0">
+              </div>
+            </div>
+
+            <div id="noiseParamsSP" class="params-block hidden">
+              <div class="slider-wrapper">
+                <label>Amount <span id="val_spa">0.02</span></label>
+                <input type="range" name="sp_amount" min="0.0" max="0.1" step="0.005" value="0.02">
+              </div>
+              <div class="slider-wrapper">
+                <label>Salt vs Pepper <span id="val_spr">0.5</span></label>
+                <input type="range" name="sp_salt_vs_pepper" min="0.0" max="1.0" step="0.05" value="0.5">
+              </div>
+            </div>
+
+            <div id="noiseParamsSpeckle" class="params-block hidden">
+              <div class="slider-wrapper">
+                <label>Variance <span id="val_specv">0.05</span></label>
+                <input type="range" name="speckle_var" min="0.0" max="0.2" step="0.01" value="0.05">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter -->
+        <div class="accordion-item">
+          <div class="accordion-header">
+            <span class="title">3. Remove Noise</span>
+            <span class="icon">+</span>
+          </div>
+          <div class="accordion-content">
+            <div class="control-group">
+              <label>Filter</label>
+              <select name="filter_name" id="filterType">
+                <option value="None">None</option>
+                <option value="Gaussian Blur">Gaussian Blur</option>
+                <option value="Median Filter">Median Filter</option>
+                <option value="Bilateral Filter">Bilateral Filter</option>
+                <option value="Non-local Means (NLM)">Non-local Means (NLM)</option>
+              </select>
+            </div>
+
+            <div id="filterParamsGaussian" class="params-block hidden">
+              <div class="slider-wrapper">
+                <label>Kernel Size <span id="val_fgk">5</span></label>
+                <input type="range" name="gaussian_ksize" min="3" max="21" step="2" value="5">
+              </div>
+              <div class="slider-wrapper">
+                <label>Sigma <span id="val_fgs">1.0</span></label>
+                <input type="range" name="gaussian_sigma" min="0" max="50" step="0.5" value="1.0">
+              </div>
+            </div>
+
+            <div id="filterParamsMedian" class="params-block hidden">
+              <div class="slider-wrapper">
+                <label>Kernel Size <span id="val_fmk">5</span></label>
+                <input type="range" name="median_ksize" min="3" max="21" step="2" value="5">
+              </div>
+            </div>
+
+            <div id="filterParamsBilateral" class="params-block hidden">
+              <div class="slider-wrapper">
+                <label>Diameter (d) <span id="val_fb_d">9</span></label>
+                <input type="range" name="bilateral_d" min="1" max="25" step="2" value="9">
+              </div>
+              <div class="slider-wrapper">
+                <label>Color Sigma <span id="val_fb_sc">75</span></label>
+                <input type="range" name="bilateral_sigma_color" min="1" max="200" step="1" value="75">
+              </div>
+              <div class="slider-wrapper">
+                <label>Space Sigma <span id="val_fb_ss">75</span></label>
+                <input type="range" name="bilateral_sigma_space" min="1" max="200" step="1" value="75">
+              </div>
+            </div>
+
+            <div id="filterParamsNLM" class="params-block hidden">
+              <div class="slider-wrapper">
+                <label>Strength (h) <span id="val_fn_h">10</span></label>
+                <input type="range" name="nlm_h" min="1" max="30" step="1" value="10">
+              </div>
+              <div class="slider-wrapper">
+                <label>Template Win <span id="val_fn_tw">7</span></label>
+                <input type="range" name="nlm_template_window" min="3" max="15" step="2" value="7">
+              </div>
+              <div class="slider-wrapper">
+                <label>Search Win <span id="val_fn_sw">21</span></label>
+                <input type="range" name="nlm_search_window" min="7" max="31" step="2" value="21">
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Enhancement -->
+        <div class="accordion-item">
+          <div class="accordion-header">
+            <span class="title">4. Final Enhancement</span>
+            <span class="icon">+</span>
+          </div>
+          <div class="accordion-content">
+            <div class="control-group">
+              <label>Enhancement</label>
+              <select name="enhancement_name" id="enhanceType">
+                <option value="None">None</option>
+                <option value="Histogram Equalization">Histogram Equalization</option>
+                <option value="CLAHE">CLAHE</option>
+                <option value="Contrast Stretching">Contrast Stretching</option>
+                <option value="Sharpening">Sharpening</option>
+              </select>
+            </div>
+
+            <div id="enhanceParamsCLAHE" class="params-block hidden">
+              <div class="slider-wrapper">
+                <label>Clip Limit <span id="val_ec_cl">2.0</span></label>
+                <input type="range" name="clahe_clip_limit" min="1.0" max="10.0" step="0.5" value="2.0">
+              </div>
+              <div class="slider-wrapper">
+                <label>Tile Grid <span id="val_ec_tg">8</span></label>
+                <input type="range" name="clahe_tile_grid_size" min="2" max="16" step="2" value="8">
+              </div>
+            </div>
+            
+            <div id="enhanceParamsStretching" class="params-block hidden">
+              <div class="slider-wrapper">
+                <label>Low % <span id="val_e_lp">2.0</span></label>
+                <input type="range" name="contrast_low_perc" min="0" max="10" step="0.5" value="2.0">
+              </div>
+              <div class="slider-wrapper">
+                <label>High % <span id="val_e_hp">98.0</span></label>
+                <input type="range" name="contrast_high_perc" min="90" max="100" step="0.5" value="98.0">
+              </div>
+            </div>
+
+            <div id="enhanceParamsSharpening" class="params-block hidden">
+              <div class="slider-wrapper">
+                <label>Amount <span id="val_e_sa">1.0</span></label>
+                <input type="range" name="sharpening_amount" min="0" max="3" step="0.1" value="1.0">
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary" id="processBtn">
+          <span>Run Processing</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </button>
+
+      </form>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-dashboard">
+      <header class="dashboard-header glassmorphism">
+        <div class="header-content">
+          <h2>Dashboard Overview</h2>
+          <div class="metrics-bar">
+            <div class="metric-card">
+              <span class="metric-label">MSE (Noisy)</span>
+              <span class="metric-value" id="mseNoisy">-</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-label">PSNR (Noisy)</span>
+              <span class="metric-value" id="psnrNoisy">-</span>
+            </div>
+            <div class="metric-card highlight-metric">
+              <span class="metric-label">MSE (Restored)</span>
+              <span class="metric-value" id="mseDenoised">-</span>
+            </div>
+            <div class="metric-card highlight-metric">
+              <span class="metric-label">PSNR (Restored)</span>
+              <span class="metric-value" id="psnrDenoised">-</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="image-grid" id="imageGrid">
+        <!-- Rendered via JS -->
+        <div class="grid-card glassmorphism">
+          <div class="card-title">Original</div>
+          <div class="img-container">
+            <img id="imgOriginal" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Original">
+            <div class="placeholder-text">Waiting for upload...</div>
+          </div>
+        </div>
+
+        <div class="grid-card glassmorphism">
+          <div class="card-title">Simulated Noise</div>
+          <div class="img-container">
+            <img id="imgNoisy" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Noisy">
+            <div class="placeholder-text">Empty</div>
+          </div>
+        </div>
+
+        <div class="grid-card glassmorphism">
+          <div class="card-title">Denoised</div>
+          <div class="img-container">
+            <img id="imgDenoised" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Denoised">
+            <div class="placeholder-text">Empty</div>
+          </div>
+        </div>
+
+        <div class="grid-card glassmorphism">
+          <div class="card-title">Enhanced Final</div>
+          <div class="img-container">
+            <img id="imgEnhanced" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Enhanced">
+            <div class="placeholder-text">Empty</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div id="loader" class="loader-overlay" aria-hidden="true">
+        <div class="spinner"></div>
+        <p>Processing pipeline...</p>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
